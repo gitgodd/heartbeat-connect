@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 💓 心跳互联 Heartbeat Connect
 
 一个浪漫的双人心率监测与情感交互系统
@@ -132,3 +133,6 @@ MIT License
 ---
 
 Made with ❤️ by SOLO
+=======
+# heartbeat-connect
+>>>>>>> e28e1132174f470b17356646fdd67a447972aa8a
