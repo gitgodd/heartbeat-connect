@@ -1673,7 +1673,7 @@
             },
 
             connectSocket() {
-                const serverUrl = 'http://192.168.134.126:3000';
+                const serverUrl = window.location.origin;
                 
                 try {
                     this.socket = io(serverUrl, {
