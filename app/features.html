@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心跳互联 - 功能展示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(233, 69, 96, 0.6);
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 60px;
+        }
+        
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .feature-title {
+            font-size: 28px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .feature-icon {
+            font-size: 48px;
+        }
+        
+        .feature-desc {
+            font-size: 18px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .feature-demo {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .demo-item {
+            text-align: center;
+        }
+        
+        .demo-icon {
+            font-size: 64px;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .demo-label {
+            margin-top: 10px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .demo-heart {
+            font-size: 64px;
+            animation: heartbeat 1s infinite ease-in-out;
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.15); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.1); }
+        }
+        
+        .flow-section {
+            margin-top: 60px;
+        }
+        
+        .flow-title {
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .flow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .flow-step {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: #e94560;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+        
+        .step-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .step-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .arrow {
+            font-size: 40px;
+            color: rgba(255, 255, 255, 0.3);
+            align-self: center;
+        }
+        
+        .stats-demo {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: rgba(233, 69, 96, 0.3);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+        }
+        
+        .stat-text {
+            font-size: 16px;
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .flow-steps {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+                text-align: center;
+            }
+            
+            .feature-demo {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💓 心跳互联</h1>
+        <p class="subtitle">双向心率监测与情感交互系统</p>
+        
+        <div class="feature">
+            <div class="feature-title">
+                <span class="feature-icon">❤️</span>
+                实时心率同步
+            </div>
+            <div class="feature-desc">
+                双方的心率数据实时同步更新，就像心跳同步一样。可以看到对方的心跳节奏，
+                感受彼此的心动时刻。
+            </div>
+            <div class="feature-demo">
+                <div class="demo-item">
+                    <div class="demo-heart">❤️</div>
+                    <div class="demo-label">你的心率</div>
+                </div>
+                <div class="demo-item">
+                    <div class="demo-heart">🤍</div>
+                    <div class="demo-label">TA的心率</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-title">
+                <span class="feature-icon">⚡</span>
+                闪电触感反馈
+            </div>
+            <div class="feature-desc">
+                点击闪电按钮，对方的手表或手机会收到震动反馈。
+                就像传递一个无形的拥抱，让爱意穿越距离。
+            </div>
+            <div class="feature-demo">
+                <div class="demo-item">
+                    <div class="demo-icon">👆</div>
+                    <div class="demo-label">点击闪电</div>
+                </div>
+                <div class="demo-item">
+                    <div class="demo-icon">📳</div>
+                    <div class="demo-label">对方震动</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-title">
+                <span class="feature-icon">✨</span>
+                星星爆炸动画
+            </div>
+            <div class="feature-desc">
+                每次收到闪电时，屏幕上会绽放出绚丽的星星。
+                就像烟花一样，为每一次互动增添浪漫氛围。
+            </div>
+            <div class="feature-demo">
+                <div class="demo-item">
+                    <div class="demo-icon">💫</div>
+                    <div class="demo-label">星星闪烁</div>
+                </div>
+                <div class="demo-item">
+                    <div class="demo-icon">🌟</div>
+                    <div class="demo-label">爆炸效果</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-title">
+                <span class="feature-icon">📍</span>
+                雷达触感模式
+            </div>
+            <div class="feature-desc">
+                长按闪电按钮，体验递进式的雷达震动。
+                震动频率从慢到快，就像雷达扫描一样，
+                持续1秒后发送闪电。
+            </div>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-title">
+                <span class="feature-icon">📊</span>
+                互动统计
+            </div>
+            <div class="feature-desc">
+                记录你们互相发送的闪电次数，见证爱情的每一次心跳。
+            </div>
+            <div class="stats-demo">
+                <div class="stat-box">
+                    <div class="stat-number">23</div>
+                    <div class="stat-text">已发送</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">18</div>
+                    <div class="stat-text">已接收</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flow-section">
+            <h2 class="flow-title">如何使用</h2>
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-title">生成配对码</div>
+                    <div class="step-desc">打开应用<br>生成6位配对码</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-title">分享给TA</div>
+                    <div class="step-desc">将配对码<br>发送给另一半</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-title">输入配对码</div>
+                    <div class="step-desc">对方输入<br>你的配对码</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-title">开始互动</div>
+                    <div class="step-desc">配对成功<br>开始发送闪电</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

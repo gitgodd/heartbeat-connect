@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ff6b9d">
+    <title>心跳 - Heartbeat</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        :root {
+            --primary: #ff6b9d;
+            --secondary: #c44569;
+            --accent: #f8b500;
+            --bg-dark: #0a0a1a;
+            --bg-gradient: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a1a 100%);
+            --heart-glow: rgba(255, 107, 157, 0.5);
+            --star-color: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .stars-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;
+        }
+
+        .star {
+            position: absolute; background: var(--star-color); border-radius: 50%;
+            animation: twinkle 2s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        .shooting-star {
+            position: absolute; width: 100px; height: 1px; background: linear-gradient(90deg, white, transparent);
+            animation: shooting 3s infinite ease-out;
+        }
+
+        @keyframes shooting {
+            0% { transform: translateX(-100px) translateY(0); opacity: 1; }
+            100% { transform: translateX(100vw) translateY(200px); opacity: 0; }
+        }
+
+        .container {
+            max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh;
+            display: flex; flex-direction: column; position: relative; z-index: 1;
+        }
+
+        .header {
+            text-align: center; margin-bottom: 20px;
+        }
+
+        .logo-wrapper {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+        }
+
+        .logo-heart {
+            width: 42px; height: 42px; animation: heartbeatLogo 1.5s infinite ease-in-out;
+        }
+
+        @keyframes heartbeatLogo {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.15); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.1); }
+        }
+
+        .logo-text {
+            font-size: 32px; font-weight: bold; color: white;
+            text-shadow: 0 0 20px var(--heart-glow);
+            background: linear-gradient(135deg, var(--primary), #ff9ec4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+
+        .status-bar {
+            display: flex; justify-content: center; align-items: center; gap: 20px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            margin-top: 15px;
+        }
+
+        .status-item {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 14px; color: rgba(255, 255, 255, 0.8);
+        }
+
+        .status-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #4ade80;
+            animation: pulseStatus 2s infinite;
+            box-shadow: 0 0 10px #4ade80;
+        }
+
+        @keyframes pulseStatus {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .status-dot.disconnected {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+        }
+
+        .nav-tabs {
+            display: flex; background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px; padding: 4px; margin-bottom: 20px;
+        }
+
+        .nav-tab {
+            flex: 1; padding: 12px 8px; text-align: center; border-radius: 16px;
+            color: rgba(255, 255, 255, 0.6); font-size: 12px; font-weight: 500;
+            transition: all 0.3s ease; cursor: pointer;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+        }
+
+        .page {
+            display: none; flex: 1; animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: flex; flex-direction: column;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pairing-section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 28px; padding: 35px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            font-size: 20px; color: white; text-align: center; margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .input-group {
+            display: flex; gap: 12px; margin-bottom: 15px;
+        }
+
+        .input {
+            flex: 1; padding: 14px 20px; border: none; border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1); color: white; font-size: 16px;
+            outline: none; transition: all 0.3s ease;
+        }
+
+        .input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(255, 107, 157, 0.3);
+        }
+
+        .input::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+        .btn {
+            padding: 14px 28px; border: none; border-radius: 16px; font-size: 16px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 20px rgba(255, 107, 157, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(255, 107, 157, 0.5);
+        }
+
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15); color: white;
+        }
+
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); }
+
+        .btn-full { width: 100%; margin-bottom: 10px; }
+
+        .pair-code {
+            text-align: center; padding: 25px;
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.15), rgba(196, 69, 105, 0.1));
+            border-radius: 20px; margin: 20px 0;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+        }
+
+        .pair-code-label {
+            font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-bottom: 10px;
+        }
+
+        .pair-code-value {
+            font-size: 42px; font-weight: bold; letter-spacing: 10px;
+            background: linear-gradient(135deg, var(--primary), #ff9ec4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 107, 157, 0.5);
+        }
+
+        .main-content {
+            flex: 1; display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .heart-section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 28px; padding: 35px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .heart-container {
+            position: relative; width: 180px; height: 180px; margin: 0 auto 25px;
+        }
+
+        .heart-wrapper {
+            position: relative; width: 100%; height: 100%;
+        }
+
+        .heart-icon {
+            font-size: 100px; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: heartbeatMain 1s infinite ease-in-out;
+            filter: drop-shadow(0 0 30px var(--heart-glow));
+        }
+
+        @keyframes heartbeatMain {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            15% { transform: translate(-50%, -50%) scale(1.12); }
+            30% { transform: translate(-50%, -50%) scale(1); }
+            45% { transform: translate(-50%, -50%) scale(1.08); }
+        }
+
+        .heart-pulse {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 120px; height: 120px;
+            border: 3px solid rgba(255, 107, 157, 0.4);
+            border-radius: 50%;
+            animation: pulseRing 1.5s infinite ease-out;
+        }
+
+        @keyframes pulseRing {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+        }
+
+        .heart-rate {
+            font-size: 52px; font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), #ff9ec4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 107, 157, 0.4);
+        }
+
+        .heart-label {
+            font-size: 16px; color: rgba(255, 255, 255, 0.6); margin-top: 8px;
+        }
+
+        .partner-heart {
+            margin-top: 25px; padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .partner-heart .heart-icon {
+            font-size: 60px; animation: partnerHeartbeat 1.2s infinite ease-in-out;
+        }
+
+        @keyframes partnerHeartbeat {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            15% { transform: translate(-50%, -50%) scale(1.1); }
+            30% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .partner-heart .heart-rate {
+            font-size: 32px;
+        }
+
+        .partner-info {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            margin-top: 12px;
+        }
+
+        .partner-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+        }
+
+        .partner-name {
+            font-size: 16px; color: white; opacity: 0.9; font-weight: 500;
+        }
+
+        .distance-badge {
+            background: rgba(255, 255, 255, 0.1); padding: 4px 12px;
+            border-radius: 20px; font-size: 12px; color: rgba(255, 255, 255, 0.7);
+        }
+
+        .touch-section {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative;
+        }
+
+        .touch-container {
+            position: relative; width: 200px; height: 200px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .touch-ring {
+            position: absolute; width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 107, 157, 0.3);
+            animation: touchPulse 2s infinite ease-out;
+        }
+
+        @keyframes touchPulse {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 0.4; }
+            100% { transform: scale(0.9); opacity: 0.8; }
+        }
+
+        .touch-ring:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .touch-ring:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        .touch-btn {
+            width: 150px; height: 150px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 158, 196, 0.9), rgba(255, 107, 157, 0.8));
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.5), inset 0 -4px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .touch-btn::before {
+            content: '';
+            position: absolute;
+            top: 10%; left: 10%;
+            width: 30%; height: 30%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .touch-icon {
+            width: 55px; height: 55px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .touch-btn:hover:not(.disabled) {
+            transform: scale(1.08);
+            box-shadow: 0 12px 40px rgba(255, 107, 157, 0.6);
+        }
+
+        .touch-btn:active:not(.disabled) {
+            transform: scale(0.95);
+        }
+
+        .touch-btn.disabled {
+            opacity: 0.4; cursor: not-allowed;
+        }
+
+        .touch-btn.sending {
+            animation: sendingPulse 0.5s infinite;
+        }
+
+        @keyframes sendingPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+        }
+
+        .touch-label {
+            margin-top: 25px; text-align: center;
+            font-size: 15px; color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        .location-section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 24px; padding: 20px;
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .location-header {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .location-icon {
+            font-size: 20px;
+        }
+
+        .location-title {
+            font-size: 16px; font-weight: 600; color: white;
+        }
+
+        .location-display {
+            margin-bottom: 15px;
+        }
+
+        .distance-display {
+            font-size: 48px; font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), #ff9ec4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .location-status {
+            font-size: 14px; color: rgba(255, 255, 255, 0.6);
+        }
+
+        .location-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; border: none;
+            padding: 12px 30px; border-radius: 20px;
+            font-size: 14px; font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .location-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+        }
+
+        .stats-section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 24px; padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px; padding: 22px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-icon {
+            font-size: 28px; margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 36px; font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), #ff9ec4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 14px; color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+        }
+
+        .stats-divider {
+            height: 1px; background: rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+        }
+
+        .connection-info {
+            display: flex; justify-content: space-between;
+            align-items: center;
+            font-size: 14px; color: rgba(255, 255, 255, 0.6);
+        }
+
+        .connection-time {
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .stars-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 100;
+        }
+
+        .profile-section {
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 28px; padding: 35px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            margin: 0 auto 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 50px;
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.4);
+            border: 4px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-name {
+            font-size: 24px; font-weight: bold; color: white;
+            margin-bottom: 8px;
+        }
+
+        .profile-status {
+            font-size: 14px; color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 20px;
+        }
+
+        .profile-edit-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white; border: none;
+            padding: 12px 30px; border-radius: 20px;
+            font-size: 14px; font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .profile-edit-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .settings-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 28px; padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .settings-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .settings-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .settings-item-left {
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        .settings-icon {
+            font-size: 22px;
+        }
+
+        .settings-label {
+            font-size: 16px; color: white;
+        }
+
+        .settings-value {
+            font-size: 14px; color: rgba(255, 255, 255, 0.5);
+        }
+
+        .settings-arrow {
+            font-size: 16px; color: rgba(255, 255, 255, 0.4);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: 0.3s;
+            border-radius: 28px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        .touch-name-selector {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 6px 12px;
+        }
+
+        .touch-name-selector select {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            min-width: 60px;
+        }
+
+        .touch-name-selector select option {
+            background: #1a1a3a;
+            color: white;
+        }
+
+        .history-section {
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .history-header {
+            display: flex; justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-title {
+            font-size: 18px; font-weight: 600; color: white;
+        }
+
+        .history-filter {
+            font-size: 14px; color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px; padding: 20px;
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        .history-icon {
+            width: 45px; height: 45px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+
+        .history-icon.lightning {
+            background: linear-gradient(135deg, #f8b500, #ffd700);
+        }
+
+        .history-icon.heart {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-title-text {
+            font-size: 15px; color: white; margin-bottom: 4px;
+        }
+
+        .history-time {
+            font-size: 12px; color: rgba(255, 255, 255, 0.5);
+        }
+
+        .history-value {
+            font-size: 18px; font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), #ff9ec4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .toast {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white; padding: 20px 40px;
+            border-radius: 16px; font-size: 16px;
+            z-index: 1000; opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show { opacity: 1; }
+
+        .notification {
+            position: fixed; top: 100px; left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; padding: 18px 30px;
+            border-radius: 16px; font-size: 15px;
+            z-index: 1000; opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.5);
+        }
+
+        .notification.show {
+            opacity: 1; animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-30px); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            display: none;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show { display: flex; }
+
+        .modal {
+            background: linear-gradient(135deg, #1a1a3a, #0a0a1a);
+            border-radius: 28px; padding: 35px;
+            width: 100%; max-width: 380px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title {
+            font-size: 22px; font-weight: bold; color: white;
+            text-align: center; margin-bottom: 25px;
+        }
+
+        .modal-input-group {
+            margin-bottom: 15px;
+        }
+
+        .modal-input-group label {
+            display: block; font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+        }
+
+        .modal-btn-group {
+            display: flex; gap: 12px; margin-top: 25px;
+        }
+
+        .modal-btn-group .btn { flex: 1; }
+
+        .distance-section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 24px; padding: 25px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .distance-title {
+            font-size: 16px; color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 15px;
+        }
+
+        .distance-value {
+            font-size: 48px; font-weight: bold;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .distance-unit {
+            font-size: 16px; color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+        }
+
+        .share-location-btn {
+            width: 100%; margin-top: 20px;
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .share-location-btn:hover {
+            background: rgba(74, 222, 128, 0.3);
+        }
+
+        .connection-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 50;
+        }
+
+        .connection-particle {
+            position: absolute; width: 6px; height: 6px;
+            background: var(--primary); border-radius: 50%;
+            animation: floatUp 3s infinite ease-out;
+        }
+
+        @keyframes floatUp {
+            0% { bottom: -20px; opacity: 0; }
+            10% { opacity: 1; }
+            100% { bottom: 100%; opacity: 0; }
+        }
+
+        .chat-section {
+            flex: 1; display: flex; flex-direction: column;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 24px; overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-partner {
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        .chat-partner .partner-avatar {
+            width: 50px; height: 50px;
+        }
+
+        .chat-partner .partner-name {
+            font-size: 18px; font-weight: 600;
+        }
+
+        .chat-partner .partner-status {
+            font-size: 13px; color: rgba(255, 255, 255, 0.6);
+        }
+
+        .chat-messages {
+            flex: 1; padding: 20px; overflow-y: auto;
+            display: flex; flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 14px 20px;
+            border-radius: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.system {
+            align-self: center;
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-bottom-left-radius: 6px;
+        }
+
+        .message-time {
+            font-size: 11px; opacity: 0.7;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .chat-input {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; gap: 12px;
+        }
+
+        .chat-input-field {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 14px 20px;
+            font-size: 15px;
+        }
+
+        .chat-send-btn {
+            padding: 14px 28px;
+            border-radius: 25px;
+            font-size: 15px;
+        }
+
+        .memory-section {
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .memory-header {
+            display: flex; justify-content: space-between;
+            align-items: center;
+        }
+
+        .memory-title {
+            font-size: 22px; font-weight: bold; color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 20px;
+            font-size: 14px;
+        }
+
+        .memory-list {
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .memory-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 25px;
+            display: flex; align-items: center; gap: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .memory-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+        }
+
+        .memory-icon {
+            width: 55px; height: 55px;
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.2), rgba(196, 69, 105, 0.2));
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+        }
+
+        .memory-content {
+            flex: 1;
+        }
+
+        .memory-name {
+            font-size: 17px; font-weight: 600; color: white;
+            margin-bottom: 5px;
+        }
+
+        .memory-date {
+            font-size: 14px; color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+        }
+
+        .memory-countdown {
+            font-size: 13px; color: rgba(255, 255, 255, 0.5);
+        }
+
+        .memory-countdown .highlight {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .memory-heart {
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .memory-heart:hover {
+            transform: scale(1.2);
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .stats-title {
+            font-size: 16px; color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+        }
+
+        .stats-row {
+            display: flex; justify-content: space-around;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 32px; font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), #ff9ec4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-desc {
+            font-size: 13px; color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars-bg" id="starsBg"></div>
+    <canvas class="stars-canvas" id="starsCanvas"></canvas>
+    <div class="connection-animation" id="connectionAnimation"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="logo-wrapper">
+                <svg class="logo-heart" viewBox="0 0 48 48">
+                    <defs>
+                        <linearGradient id="heartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ff9ec4"/>
+                            <stop offset="100%" style="stop-color:#ff6b9d"/>
+                        </linearGradient>
+                        <filter id="heartGlow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <path fill="url(#heartGradient)" filter="url(#heartGlow)" d="M24 42c-2.21 0-4-1.79-4-4 0-2.21 1.79-4 4-4s4 1.79 4 4c0 2.21-1.79 4-4 4zm0-28c-5.52 0-10 4.48-10 10 0 3.31 1.79 6.2 4.47 7.69-.1-.94-.19-2.31.04-3.29.2-.95.9-1.79 1.79-2.26 1.39-.69 2.97-1.07 4.69-1.07 1.73 0 3.3.38 4.69 1.07.89.47 1.59 1.31 1.79 2.26.23.98.14 2.35.04 3.29 2.68-1.49 4.47-4.38 4.47-7.69 0-5.52-4.48-10-10-10z"/>
+                </svg>
+                <span class="logo-text">心跳</span>
+            </div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-dot" id="connectionDot"></span>
+                    <span id="connectionStatus">未连接</span>
+                </div>
+                <div class="status-item" id="vibrationStatus">震动: ⏳</div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="main">💓 心跳</div>
+            <div class="nav-tab" data-tab="chat">💬 消息</div>
+            <div class="nav-tab" data-tab="memory">🎂 纪念日</div>
+            <div class="nav-tab" data-tab="profile">👤 我的</div>
+        </div>
+
+        <div class="page active" id="mainPage">
+            <div class="main-content">
+                <div class="heart-section">
+                    <div class="heart-container">
+                        <div class="heart-wrapper">
+                            <span class="heart-icon" id="myHeart">❤️</span>
+                            <div class="heart-pulse"></div>
+                            <div class="heart-pulse" style="animation-delay: 0.5s;"></div>
+                        </div>
+                    </div>
+                    <div class="heart-rate" id="myHeartRate">--</div>
+                    <div class="heart-label">你的心率 (BPM)</div>
+
+                    <div class="partner-heart" id="partnerSection">
+                        <div class="heart-container">
+                            <span class="heart-icon" id="partnerHeart">🤍</span>
+                        </div>
+                        <div class="heart-rate" id="partnerHeartRate">--</div>
+                        <div class="partner-info">
+                            <div class="partner-avatar" id="partnerAvatar">👤</div>
+                            <div class="partner-name" id="partnerName">等待配对...</div>
+                            <div class="distance-badge" id="distanceBadge">📍 --</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="touch-section">
+                    <div class="touch-container">
+                        <div class="touch-ring"></div>
+                        <div class="touch-ring"></div>
+                        <div class="touch-ring"></div>
+                        <button class="touch-btn disabled" id="touchBtn">
+                            <svg viewBox="0 0 64 64" class="touch-icon">
+                                <defs>
+                                    <linearGradient id="touchGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#ff9ec4"/>
+                                        <stop offset="100%" style="stop-color:#ff6b9d"/>
+                                    </linearGradient>
+                                </defs>
+                                <path fill="url(#touchGradient)" d="M32 56c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-24c-6.63 0-12 5.37-12 12 0 4.91 3.12 9.16 7.38 11.04-.1-.94-.19-2.41.04-3.41.2-.93.9-1.79 1.79-2.26 1.39-.69 2.97-1.07 4.69-1.07 1.73 0 3.3.38 4.69 1.07.89.47 1.59 1.33 1.79 2.26.23.99.14 2.47.04 3.41 4.26-1.88 7.38-6.13 7.38-11.04 0-6.63-5.37-12-12-12z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="touch-label" id="touchLabel">
+                        点击发送心动<br>
+                        <span style="font-size: 13px; opacity: 0.6;">长按传递思念</span>
+                    </div>
+                </div>
+
+                <div class="location-section" id="locationSection">
+                    <div class="location-header">
+                        <span class="location-icon">📍</span>
+                        <span class="location-title">距离</span>
+                    </div>
+                    <div class="location-display">
+                        <div class="distance-display" id="distanceDisplay">--</div>
+                        <div class="location-status" id="locationStatus">位置共享未开启</div>
+                    </div>
+                    <button class="location-btn" id="shareLocationBtn">🔄 共享我的位置</button>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📤</div>
+                            <div class="stat-value" id="sentCount">0</div>
+                            <div class="stat-label">已发送</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📥</div>
+                            <div class="stat-value" id="receivedCount">0</div>
+                            <div class="stat-label">已接收</div>
+                        </div>
+                    </div>
+                    <div class="stats-divider"></div>
+                    <div class="connection-info">
+                        <div class="connection-time">
+                            ⏱️ <span id="connectionTime">--</span>
+                        </div>
+                        <div>
+                            <span id="partnerStatus">离线</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="distance-section">
+                    <div class="distance-title">距离彼此</div>
+                    <div class="distance-value" id="distanceValue">--</div>
+                    <div class="distance-unit">公里</div>
+                    <button class="btn share-location-btn" id="shareLocationBtn">📍 分享我的位置</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="chatPage">
+            <div class="chat-section">
+                <div class="chat-header">
+                    <div class="chat-partner">
+                        <div class="partner-avatar" id="chatPartnerAvatar">👤</div>
+                        <div class="partner-info">
+                            <div class="partner-name" id="chatPartnerName">等待配对...</div>
+                            <div class="partner-status" id="chatPartnerStatus">离线</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message system">
+                        <span>💫 连接后即可开始聊天</span>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <input type="text" class="input chat-input-field" id="chatInput" placeholder="输入消息..." maxlength="200">
+                    <button class="btn btn-primary chat-send-btn" id="chatSendBtn">发送</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="memoryPage">
+            <div class="memory-section">
+                <div class="memory-header">
+                    <h2 class="memory-title">🎂 我们的纪念日</h2>
+                    <button class="btn btn-primary btn-sm" id="addMemoryBtn">+ 添加纪念日</button>
+                </div>
+                
+                <div class="memory-list" id="memoryList">
+                    <div class="memory-item">
+                        <div class="memory-icon">💑</div>
+                        <div class="memory-content">
+                            <div class="memory-name">在一起</div>
+                            <div class="memory-date">2024年1月1日</div>
+                            <div class="memory-countdown">已在一起 <span class="highlight">876</span> 天</div>
+                        </div>
+                        <div class="memory-heart">❤️</div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-icon">🎁</div>
+                        <div class="memory-content">
+                            <div class="memory-name">TA的生日</div>
+                            <div class="memory-date">1999年6月15日</div>
+                            <div class="memory-countdown">还有 <span class="highlight">14</span> 天</div>
+                        </div>
+                        <div class="memory-heart">🤍</div>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="stats-title">📊 爱情统计</div>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-num">128</div>
+                            <div class="stat-desc">心动互动</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-num">520</div>
+                            <div class="stat-desc">消息发送</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-num">48</div>
+                            <div class="stat-desc">视频通话</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="profilePage">
+            <div class="profile-section">
+                <div class="profile-card">
+                    <div class="profile-avatar" id="myAvatar">👤</div>
+                    <div class="profile-name" id="myName">点击编辑昵称</div>
+                    <div class="profile-status" id="myStatus">在线</div>
+                    <button class="profile-edit-btn" id="editProfileBtn">✏️ 编辑资料</button>
+                </div>
+
+                <div class="settings-card">
+                    <div class="settings-item">
+                        <div class="settings-item-left">
+                            <span class="settings-icon">🔔</span>
+                            <span class="settings-label">震动反馈</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="vibrationToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-item-left">
+                            <span class="settings-icon">💬</span>
+                            <span class="settings-label">互动名称</span>
+                        </div>
+                        <div class="touch-name-selector" id="touchNameSelector">
+                            <select id="touchNameSelect">
+                                <option value="心动">心动</option>
+                                <option value="思念">思念</option>
+                                <option value="牵挂">牵挂</option>
+                                <option value="想念">想念</option>
+                                <option value="惦记">惦记</option>
+                                <option value="关怀">关怀</option>
+                                <option value="温暖">温暖</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-item-left">
+                            <span class="settings-icon">�</span>
+                            <span class="settings-label">位置共享</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="locationToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-item-left">
+                            <span class="settings-icon">�</span>
+                            <span class="settings-label">隐私设置</span>
+                        </div>
+                        <span class="settings-arrow">›</span>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-item-left">
+                            <span class="settings-icon">ℹ️</span>
+                            <span class="settings-label">关于我们</span>
+                        </div>
+                        <span class="settings-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="pairing-section">
+                    <div class="section-title">配对管理</div>
+                    <button class="btn btn-secondary btn-full" id="generateCodeBtn">✨ 生成新配对码</button>
+                    <div class="pair-code hidden" id="pairCodeBox">
+                        <div class="pair-code-label">分享这个码给TA</div>
+                        <div class="pair-code-value" id="pairCodeDisplay">------</div>
+                    </div>
+                    <div style="text-align: center; margin: 20px 0; color: rgba(255,255,255,0.5);">— 或 —</div>
+                    <div class="input-group">
+                        <input type="text" class="input" id="joinCodeInput" placeholder="输入配对码" maxlength="6" style="text-transform: uppercase;">
+                        <button class="btn btn-primary" id="joinCodeBtn">加入</button>
+                    </div>
+                    <button class="btn btn-secondary btn-full" id="disconnectBtn" style="display: none;">🚫 断开连接</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="historyPage">
+            <div class="history-section">
+                <div class="history-header">
+                    <div class="history-title">互动记录</div>
+                    <div class="history-filter">全部</div>
+                </div>
+
+                <div id="historyList">
+                    <div class="history-item">
+                        <div class="history-icon lightning">⚡</div>
+                        <div class="history-content">
+                            <div class="history-title-text">发送闪电</div>
+                            <div class="history-time">刚刚</div>
+                        </div>
+                        <div class="history-value">+1</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon heart">❤️</div>
+                        <div class="history-content">
+                            <div class="history-title-text">心率同步</div>
+                            <div class="history-time">2分钟前</div>
+                        </div>
+                        <div class="history-value">72</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon lightning">⚡</div>
+                        <div class="history-content">
+                            <div class="history-title-text">收到闪电</div>
+                            <div class="history-time">5分钟前</div>
+                        </div>
+                        <div class="history-value">+1</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editProfileModal">
+        <div class="modal">
+            <div class="modal-title">编辑资料</div>
+            <div class="modal-input-group">
+                <label>昵称</label>
+                <input type="text" class="input" id="editNameInput" placeholder="输入昵称" maxlength="20">
+            </div>
+            <div class="modal-input-group">
+                <label>状态签名</label>
+                <input type="text" class="input" id="editStatusInput" placeholder="输入状态" maxlength="50">
+            </div>
+            <div class="modal-btn-group">
+                <button class="btn btn-secondary" id="cancelEditBtn">取消</button>
+                <button class="btn btn-primary" id="saveEditBtn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <div class="notification" id="notification"></div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const App = {
+            socket: null,
+            userId: null,
+            partner: null,
+            paired: false,
+            simulatedHeartRate: 72,
+            partnerHeartRate: null,
+            radarInterval: null,
+            stars: [],
+            connectionStartTime: null,
+            myLocation: null,
+            partnerLocation: null,
+
+            init() {
+                this.createStars();
+                this.initCanvas();
+                this.bindEvents();
+                this.connectSocket();
+                this.startConnectionTimer();
+                this.checkVibrationSupport();
+            },
+
+            checkVibrationSupport() {
+                const hasVibration = 'vibrate' in navigator;
+                if (hasVibration) {
+                    document.getElementById('vibrationStatus').textContent = '震动: ✅';
+                } else {
+                    document.getElementById('vibrationStatus').textContent = '震动: ❌';
+                    this.showToast('当前设备不支持震动功能');
+                }
+                return hasVibration;
+            },
+
+            createStars() {
+                const bg = document.getElementById('starsBg');
+                for (let i = 0; i < 80; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 100 + '%';
+                    star.style.width = Math.random() * 4 + 1 + 'px';
+                    star.style.height = star.style.width;
+                    star.style.animationDelay = Math.random() * 3 + 's';
+                    bg.appendChild(star);
+                }
+
+                for (let i = 0; i < 3; i++) {
+                    const shooting = document.createElement('div');
+                    shooting.className = 'shooting-star';
+                    shooting.style.top = Math.random() * 50 + '%';
+                    shooting.style.animationDelay = i * 3 + 's';
+                    bg.appendChild(shooting);
+                }
+            },
+
+            initCanvas() {
+                this.canvas = document.getElementById('starsCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+                this.animateStars();
+            },
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+
+            animateStars() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.stars = this.stars.filter(star => star.alpha > 0);
+                
+                this.stars.forEach(star => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = `rgba(255, 215, 0, ${star.alpha})`;
+                    this.ctx.fill();
+                    
+                    if (star.type === 'glow') {
+                        this.ctx.beginPath();
+                        this.ctx.arc(star.x, star.y, star.size * 3, 0, Math.PI * 2);
+                        this.ctx.fillStyle = `rgba(255, 215, 0, ${star.alpha * 0.2})`;
+                        this.ctx.fill();
+                    }
+                    
+                    star.alpha -= 0.015;
+                    star.y -= star.speed;
+                    star.x += Math.sin(star.angle) * 0.8;
+                    star.angle += 0.08;
+                });
+
+                requestAnimationFrame(() => this.animateStars());
+            },
+
+            createStarExplosion(x, y) {
+                const colors = ['#FFD700', '#FFA500', '#FF6347', '#FFFFFF', '#FF9EC4'];
+                for (let i = 0; i < 40; i++) {
+                    const angle = (Math.PI * 2 / 40) * i;
+                    const speed = Math.random() * 4 + 2;
+                    this.stars.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: Math.random() * 5 + 2,
+                        alpha: 1,
+                        speed: speed,
+                        angle: angle,
+                        type: Math.random() > 0.7 ? 'glow' : 'normal',
+                        color: colors[Math.floor(Math.random() * colors.length)]
+                    });
+                }
+            },
+
+            createConnectionParticles() {
+                const container = document.getElementById('connectionAnimation');
+                for (let i = 0; i < 15; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'connection-particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 3 + 's';
+                    particle.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    container.appendChild(particle);
+                }
+            },
+
+            bindEvents() {
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        this.switchTab(tab.dataset.tab);
+                    });
+                });
+
+                document.getElementById('chatSendBtn').addEventListener('click', () => this.sendChat());
+                document.getElementById('chatInput').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') this.sendChat();
+                });
+
+                document.getElementById('addMemoryBtn').addEventListener('click', () => this.addMemory());
+
+                document.querySelectorAll('.memory-heart').forEach(heart => {
+                    heart.addEventListener('click', () => {
+                        heart.textContent = heart.textContent === '❤️' ? '🤍' : '❤️';
+                    });
+                });
+
+                document.getElementById('generateCodeBtn').addEventListener('click', () => this.generateCode());
+                document.getElementById('joinCodeBtn').addEventListener('click', () => this.joinCode());
+                document.getElementById('disconnectBtn').addEventListener('click', () => this.disconnect());
+
+                const touchBtn = document.getElementById('touchBtn');
+                
+                touchBtn.addEventListener('click', () => {
+                    if (!this.paired) return;
+                    this.triggerLightning();
+                });
+
+                let radarTimeout;
+                touchBtn.addEventListener('touchstart', (e) => {
+                    if (!this.paired) return;
+                    e.preventDefault();
+                    this.startRadarFeedback();
+                    radarTimeout = setTimeout(() => {
+                        this.triggerTouch();
+                    }, 1000);
+                });
+
+                touchBtn.addEventListener('touchend', () => {
+                    clearTimeout(radarTimeout);
+                    this.stopRadarFeedback();
+                });
+
+                touchBtn.addEventListener('mousedown', () => {
+                    if (!this.paired) return;
+                    this.startRadarFeedback();
+                    radarTimeout = setTimeout(() => {
+                        this.triggerTouch();
+                    }, 1000);
+                });
+
+                touchBtn.addEventListener('mouseup', () => {
+                    clearTimeout(radarTimeout);
+                    this.stopRadarFeedback();
+                });
+
+                touchBtn.addEventListener('mouseleave', () => {
+                    clearTimeout(radarTimeout);
+                    this.stopRadarFeedback();
+                });
+
+                document.getElementById('editProfileBtn').addEventListener('click', () => {
+                    document.getElementById('editProfileModal').classList.add('show');
+                    document.getElementById('editNameInput').value = document.getElementById('myName').textContent;
+                    document.getElementById('editStatusInput').value = document.getElementById('myStatus').textContent;
+                });
+
+                document.getElementById('cancelEditBtn').addEventListener('click', () => {
+                    document.getElementById('editProfileModal').classList.remove('show');
+                });
+
+                document.getElementById('saveEditBtn').addEventListener('click', () => {
+                    const name = document.getElementById('editNameInput').value || '匿名';
+                    const status = document.getElementById('editStatusInput').value || '在线';
+                    document.getElementById('myName').textContent = name;
+                    document.getElementById('myStatus').textContent = status;
+                    document.getElementById('editProfileModal').classList.remove('show');
+                    this.showToast('资料已更新');
+                    
+                    if (this.socket && this.socket.connected) {
+                        this.socket.emit('update_profile', { name, status });
+                    }
+                });
+
+                document.getElementById('shareLocationBtn').addEventListener('click', () => {
+                    this.shareLocation();
+                });
+
+                document.getElementById('vibrationToggle').addEventListener('change', (e) => {
+                    localStorage.setItem('vibrationEnabled', e.target.checked.toString());
+                    this.showToast(e.target.checked ? '震动已开启' : '震动已关闭');
+                });
+
+                document.getElementById('touchNameSelect').addEventListener('change', (e) => {
+                    localStorage.setItem('touchName', e.target.value);
+                    this.showToast(`互动名称已设为: ${e.target.value}`);
+                });
+
+                document.getElementById('locationToggle').addEventListener('change', (e) => {
+                    localStorage.setItem('locationEnabled', e.target.checked.toString());
+                    if (e.target.checked) {
+                        this.shareLocation();
+                    }
+                });
+
+                const savedTouchName = localStorage.getItem('touchName');
+                if (savedTouchName) {
+                    document.getElementById('touchNameSelect').value = savedTouchName;
+                }
+
+                const savedVibration = localStorage.getItem('vibrationEnabled');
+                if (savedVibration !== null) {
+                    document.getElementById('vibrationToggle').checked = savedVibration === 'true';
+                }
+
+                const savedLocation = localStorage.getItem('locationEnabled');
+                if (savedLocation !== null) {
+                    document.getElementById('locationToggle').checked = savedLocation === 'true';
+                }
+
+                document.getElementById('nameInput')?.addEventListener('input', (e) => {
+                    document.getElementById('myName').textContent = e.target.value || '点击编辑昵称';
+                });
+            },
+
+            switchTab(tabName) {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+                document.getElementById(`${tabName}Page`).classList.add('active');
+            },
+
+            connectSocket() {
+                const serverUrl = 'http://192.168.134.126:3000';
+                
+                try {
+                    this.socket = io(serverUrl, {
+                        transports: ['websocket', 'polling'],
+                        reconnection: true,
+                        reconnectionAttempts: 5,
+                        reconnectionDelay: 1000
+                    });
+
+                    this.socket.on('connect', () => {
+                        document.getElementById('connectionDot').classList.remove('disconnected');
+                        document.getElementById('connectionStatus').textContent = '已连接';
+                        
+                        const name = document.getElementById('myName').textContent || 'Anonymous';
+                        this.socket.emit('register', { name });
+                    });
+
+                    this.socket.on('registered', (data) => {
+                        this.userId = data.id;
+                    });
+
+                    this.socket.on('code_generated', (data) => {
+                        document.getElementById('pairCodeDisplay').textContent = data.code;
+                        document.getElementById('pairCodeBox').classList.remove('hidden');
+                        this.showToast('配对码已生成！');
+                    });
+
+                    this.socket.on('paired', (data) => {
+                        this.paired = true;
+                        this.partner = data.partner;
+                        this.connectionStartTime = Date.now();
+                        
+                        document.getElementById('partnerName').textContent = data.partner.name;
+                        document.getElementById('partnerAvatar').textContent = data.partner.avatar || '👤';
+                        document.getElementById('partnerHeart').textContent = data.partner.avatar || '❤️';
+                        document.getElementById('partnerStatus').textContent = '在线';
+                        document.getElementById('distanceBadge').textContent = '📍 同步中...';
+                        document.getElementById('touchBtn').classList.remove('disabled');
+                        document.getElementById('disconnectBtn').style.display = 'block';
+                        
+                        document.getElementById('chatPartnerName').textContent = data.partner.name;
+                        document.getElementById('chatPartnerAvatar').textContent = data.partner.avatar || '👤';
+                        document.getElementById('chatPartnerStatus').textContent = '在线';
+                        
+                        const chatMessages = document.getElementById('chatMessages');
+                        chatMessages.innerHTML = `<div class="message system"><span>💫 ${data.partner.name} 已加入，开始聊天吧！</span></div>`;
+                        
+                        this.updateStats(data.stats);
+                        this.startHeartRateSimulation();
+                        this.createConnectionParticles();
+                        this.showNotification(`${data.partner.name} 已连接！❤️`);
+                        
+                        if (this.partnerLocation) {
+                            this.calculateDistance();
+                        }
+                    });
+
+                    this.socket.on('partner_heartbeat', (data) => {
+                        this.partnerHeartRate = data.bpm;
+                        document.getElementById('partnerHeartRate').textContent = data.bpm;
+                        this.addHistory('heart', '心率同步', data.bpm);
+                    });
+
+                    this.socket.on('touch_received', (data) => {
+                        this.triggerVibration('heartbeat');
+                        const rect = document.getElementById('touchBtn').getBoundingClientRect();
+                        this.createStarExplosion(
+                            rect.left + rect.width / 2,
+                            rect.top + rect.height / 2
+                        );
+                        const touchName = this.getTouchName();
+                        this.showNotification(`${data.fromName} 传递了${touchName} ❤️`);
+                        this.flashScreen();
+                        this.addHistory('touch', `收到${touchName}`, '+1');
+                    });
+
+                    this.socket.on('stats_update', (data) => {
+                        this.updateStats(data);
+                    });
+
+                    this.socket.on('partner_disconnected', (data) => {
+                        this.showNotification(`${data.name} 已断开连接`);
+                        this.paired = false;
+                        this.partner = null;
+                        document.getElementById('touchBtn').classList.add('disabled');
+                        document.getElementById('partnerHeartRate').textContent = '--';
+                        document.getElementById('partnerName').textContent = '等待配对...';
+                        document.getElementById('partnerStatus').textContent = '离线';
+                        document.getElementById('distanceBadge').textContent = '📍 --';
+                        document.getElementById('disconnectBtn').style.display = 'none';
+                    });
+
+                    this.socket.on('error', (data) => {
+                        this.showToast(data.message);
+                    });
+
+                    this.socket.on('disconnect', () => {
+                        document.getElementById('connectionDot').classList.add('disconnected');
+                        document.getElementById('connectionStatus').textContent = '连接断开';
+                    });
+
+                    this.socket.on('location_update', (data) => {
+                        this.partnerLocation = { lat: data.lat, lng: data.lng };
+                        this.calculateDistance();
+                    });
+
+                    this.socket.on('chat_received', (data) => {
+                        this.addChatMessage(data.message, 'received');
+                        this.triggerVibration();
+                    });
+
+                } catch (error) {
+                    console.error('Socket connection failed:', error);
+                    document.getElementById('connectionStatus').textContent = '连接失败';
+                    this.showToast('无法连接到服务器');
+                }
+            },
+
+            generateCode() {
+                if (this.socket && this.socket.connected) {
+                    this.socket.emit('generate_code');
+                } else {
+                    this.showToast('请等待连接建立');
+                }
+            },
+
+            joinCode() {
+                const code = document.getElementById('joinCodeInput').value.toUpperCase();
+                if (code.length !== 6) {
+                    this.showToast('请输入6位配对码');
+                    return;
+                }
+                if (this.socket && this.socket.connected) {
+                    this.socket.emit('join_code', { code });
+                } else {
+                    this.showToast('请等待连接建立');
+                }
+            },
+
+            disconnect() {
+                if (this.socket && this.socket.connected) {
+                    this.socket.disconnect();
+                    this.paired = false;
+                    this.partner = null;
+                    document.getElementById('touchBtn').classList.add('disabled');
+                    document.getElementById('partnerHeartRate').textContent = '--';
+                    document.getElementById('partnerName').textContent = '等待配对...';
+                    document.getElementById('partnerStatus').textContent = '离线';
+                    document.getElementById('disconnectBtn').style.display = 'none';
+                    this.showToast('已断开连接');
+                }
+            },
+
+            triggerTouch() {
+                if (this.socket && this.socket.connected && this.paired) {
+                    const btn = document.getElementById('touchBtn');
+                    btn.classList.add('sending');
+                    
+                    this.socket.emit('touch');
+                    this.triggerVibration('heartbeat');
+                    
+                    const rect = btn.getBoundingClientRect();
+                    this.createStarExplosion(
+                        rect.left + rect.width / 2,
+                        rect.top + rect.height / 2
+                    );
+                    
+                    setTimeout(() => btn.classList.remove('sending'), 500);
+                    const touchName = this.getTouchName();
+                    this.addHistory('touch', `发送${touchName}`, '+1');
+                }
+            },
+
+            getTouchName() {
+                const names = ['心动', '思念', '牵挂', '想念', '惦记', '关怀', '温暖'];
+                const savedName = localStorage.getItem('touchName');
+                return savedName || names[Math.floor(Math.random() * names.length)];
+            },
+
+            startRadarFeedback() {
+                if (!navigator.vibrate) return;
+                
+                let intensity = 80;
+                let interval = 150;
+                
+                this.radarInterval = setInterval(() => {
+                    navigator.vibrate(intensity);
+                    intensity = Math.max(40, intensity - 8);
+                    interval = Math.max(80, interval - 10);
+                }, interval);
+            },
+
+            stopRadarFeedback() {
+                if (this.radarInterval) {
+                    clearInterval(this.radarInterval);
+                    this.radarInterval = null;
+                }
+                if (navigator.vibrate) {
+                    navigator.vibrate(0);
+                }
+            },
+
+            triggerVibration(pattern = 'heartbeat') {
+                const vibrationEnabled = localStorage.getItem('vibrationEnabled');
+                if (vibrationEnabled === 'false') {
+                    return;
+                }
+                
+                if (!navigator.vibrate) {
+                    return;
+                }
+                
+                const patterns = {
+                    heartbeat: [100, 50, 100, 50, 100],
+                    pulse: [200, 100, 200, 100, 200],
+                    notification: [150, 50, 150],
+                    touch: [50, 30, 50, 30, 50]
+                };
+                
+                const selectedPattern = patterns[pattern] || patterns.heartbeat;
+                
+                try {
+                    navigator.vibrate(selectedPattern);
+                } catch (e) {
+                    console.warn('Vibration API error:', e);
+                }
+            },
+
+            hasVibrationSupport() {
+                return 'vibrate' in navigator;
+            },
+
+            flashScreen() {
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(255, 107, 157, 0.4); z-index: 999;
+                    pointer-events: none; animation: flashFade 0.6s ease-out forwards;
+                `;
+                document.body.appendChild(overlay);
+                setTimeout(() => overlay.remove(), 600);
+            },
+
+            updateStats(stats) {
+                document.getElementById('sentCount').textContent = stats.sent || 0;
+                document.getElementById('receivedCount').textContent = stats.received || 0;
+            },
+
+            startHeartRateSimulation() {
+                setInterval(() => {
+                    this.simulatedHeartRate = 65 + Math.floor(Math.random() * 15);
+                    document.getElementById('myHeartRate').textContent = this.simulatedHeartRate;
+                    
+                    if (this.socket && this.socket.connected && this.paired) {
+                        this.socket.emit('heartbeat', {
+                            bpm: this.simulatedHeartRate,
+                            timestamp: Date.now()
+                        });
+                    }
+                }, 2000);
+            },
+
+            startConnectionTimer() {
+                setInterval(() => {
+                    if (this.connectionStartTime) {
+                        const elapsed = Date.now() - this.connectionStartTime;
+                        const hours = Math.floor(elapsed / 3600000);
+                        const minutes = Math.floor((elapsed % 3600000) / 60000);
+                        
+                        if (hours > 0) {
+                            document.getElementById('connectionTime').textContent = `${hours}小时${minutes}分钟`;
+                        } else {
+                            document.getElementById('connectionTime').textContent = `${minutes}分钟`;
+                        }
+                    }
+                }, 60000);
+            },
+
+            shareLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        this.myLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        document.getElementById('locationStatus').textContent = '位置共享中...';
+                        
+                        if (this.socket && this.socket.connected) {
+                            this.socket.emit('share_location', this.myLocation);
+                        }
+                        
+                        this.showToast('位置已分享');
+                        this.calculateDistance();
+                        
+                        if (!this.locationWatch) {
+                            this.locationWatch = navigator.geolocation.watchPosition((pos) => {
+                                this.myLocation = {
+                                    lat: pos.coords.latitude,
+                                    lng: pos.coords.longitude
+                                };
+                                if (this.socket && this.socket.connected) {
+                                    this.socket.emit('share_location', this.myLocation);
+                                }
+                                this.calculateDistance();
+                            }, null, {
+                                enableHighAccuracy: true,
+                                timeout: 5000,
+                                maximumAge: 0
+                            });
+                        }
+                    }, (error) => {
+                        this.showToast('无法获取位置，请检查权限设置');
+                        document.getElementById('locationStatus').textContent = '无法获取位置';
+                    }, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    });
+                } else {
+                    this.showToast('浏览器不支持位置定位');
+                }
+            },
+
+            stopLocationShare() {
+                if (this.locationWatch) {
+                    navigator.geolocation.clearWatch(this.locationWatch);
+                    this.locationWatch = null;
+                }
+                document.getElementById('locationStatus').textContent = '位置共享已停止';
+            },
+
+            calculateDistance() {
+                if (!this.myLocation || !this.partnerLocation) {
+                    document.getElementById('distanceDisplay').textContent = '--';
+                    return;
+                }
+                
+                const R = 6371;
+                const dLat = this.deg2rad(this.partnerLocation.lat - this.myLocation.lat);
+                const dLon = this.deg2rad(this.partnerLocation.lng - this.myLocation.lng);
+                const a = 
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(this.deg2rad(this.myLocation.lat)) * Math.cos(this.deg2rad(this.partnerLocation.lat)) * 
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                const distance = R * c;
+                
+                let displayDistance;
+                if (distance < 1) {
+                    displayDistance = `${(distance * 1000).toFixed(0)}m`;
+                } else if (distance < 1000) {
+                    displayDistance = `${distance.toFixed(1)}km`;
+                } else {
+                    displayDistance = `${(distance / 1000).toFixed(1)}千km`;
+                }
+                
+                document.getElementById('distanceDisplay').textContent = displayDistance;
+                document.getElementById('distanceValue').textContent = distance.toFixed(1);
+                document.getElementById('distanceBadge').textContent = `📍 ${displayDistance}`;
+                document.getElementById('locationStatus').textContent = '距离实时更新中';
+            },
+
+            deg2rad(deg) {
+                return deg * (Math.PI / 180);
+            },
+
+            addHistory(type, title, value) {
+                const list = document.getElementById('historyList');
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <div class="history-icon ${type}">${type === 'lightning' ? '⚡' : '❤️'}</div>
+                    <div class="history-content">
+                        <div class="history-title-text">${title}</div>
+                        <div class="history-time">刚刚</div>
+                    </div>
+                    <div class="history-value">${value}</div>
+                `;
+                list.insertBefore(item, list.firstChild);
+                
+                if (list.children.length > 10) {
+                    list.removeChild(list.lastChild);
+                }
+            },
+
+            showToast(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            },
+
+            showNotification(message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.classList.add('show');
+                setTimeout(() => notification.classList.remove('show'), 3500);
+            },
+
+            sendChat() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                if (!message || !this.paired) return;
+                
+                input.value = '';
+                this.addChatMessage(message, 'sent');
+                
+                if (this.socket && this.socket.connected) {
+                    this.socket.emit('chat', { message });
+                }
+            },
+
+            addChatMessage(message, type) {
+                const messages = document.getElementById('chatMessages');
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${type}`;
+                
+                const now = new Date();
+                const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                
+                msgDiv.innerHTML = `
+                    <div>${message}</div>
+                    <div class="message-time">${timeStr}</div>
+                `;
+                messages.appendChild(msgDiv);
+                messages.scrollTop = messages.scrollHeight;
+            },
+
+            addMemory() {
+                const name = prompt('请输入纪念日名称：');
+                if (!name) return;
+                
+                const date = prompt('请输入日期 (格式：YYYY-MM-DD)：');
+                if (!date) return;
+                
+                const icons = ['💑', '🎁', '🌹', '💍', '🎂', '🌟'];
+                const icon = icons[Math.floor(Math.random() * icons.length)];
+                
+                const list = document.getElementById('memoryList');
+                const item = document.createElement('div');
+                item.className = 'memory-item';
+                item.innerHTML = `
+                    <div class="memory-icon">${icon}</div>
+                    <div class="memory-content">
+                        <div class="memory-name">${name}</div>
+                        <div class="memory-date">${date}</div>
+                        <div class="memory-countdown">计算中...</div>
+                    </div>
+                    <div class="memory-heart" onclick="this.textContent = this.textContent === '❤️' ? '🤍' : '❤️'">🤍</div>
+                `;
+                list.insertBefore(item, list.firstChild);
+                this.showToast('纪念日已添加');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            App.init();
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes flashFade {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>

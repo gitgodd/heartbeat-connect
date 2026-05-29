@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HeartbeatConnect</string>
+    <string name="title_activity_main">HeartbeatConnect</string>
+    <string name="package_name">com.heartbeat.connect</string>
+    <string name="custom_url_scheme">com.heartbeat.connect</string>
+</resources>
