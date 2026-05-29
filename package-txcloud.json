@@ -1,0 +1,15 @@
+{
+  "name": "heartbeat-connect",
+  "version": "1.0.0",
+  "description": "心跳互联 - 实时连接应用",
+  "main": "server/src/index.js",
+  "scripts": {
+    "start": "node server/src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.1"
+  }
+}
